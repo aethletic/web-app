@@ -1,5 +1,5 @@
 <?php
 
-use Aethletic\Container\Container as App;
+use Aethletic\App\Container as App;
 
 App::route()->get('/', 'MainController::index');

@@ -1,9 +1,22 @@
 <?php
 
+date_default_timezone_set('Europe/Samara');
+
 require __DIR__ . '/../vendor/autoload.php';
 
-use Aethletic\Container\Container;
-use Aethletic\Container\Bootstrap;
+use Aethletic\App\Container;
+use Aethletic\App\Bootstrap;
+
+$app = Container::self();
+$app->config = require '../config/app.php';
+
+if ($app->config['dev_mode']) {
+    error_reporting(E_ALL);
+    ini_set('display_errors', true);
+} else {
+    ini_set('display_errors', false);
+    error_reporting(0);
+}
 
 Bootstrap::autoload([
     __DIR__ . '/controllers/*.php',
@@ -11,13 +24,11 @@ Bootstrap::autoload([
     __DIR__ . '/helpers/*.php',
 ]);
 
-$app = new Container();
-
-$app->register('route', function() {
+$app->set('route', $one_time = true, function() {
     return new \Bramus\Router\Router();
 });
 
-$app->register('db', function() {
+$app->set('db', $one_time = true, function() {
     $factory = new \Database\Connectors\ConnectionFactory();
     return $factory->make(array(
         'driver'    => 'mysql', // sqlite, mysql
@@ -32,7 +43,7 @@ $app->register('db', function() {
     ));
 });
 
-$app->register('twig', function() {
+$app->set('twig', $one_time = true, function() {
     $loader = new \Twig\Loader\FilesystemLoader(__DIR__ . '/views');
     $twig = new \Twig\Environment($loader, [
         'cache' => false,
@@ -42,14 +53,14 @@ $app->register('twig', function() {
     return $twig;
 });
 
-$app->register('memcache', function() {
+$app->set('memcache', $one_time = true, function() {
     $mem = new \Memcached();
     $mem->addServer('localhost', '11211');
     return $mem;
 });
 
-$app->register('redis', function() {
-    $redis = new \Redis;
-    $redis->connect('127.0.0.1');
-    return $redis;
-});
+// $app->set('redis', $one_time = true, function() {
+//     $redis = new \Redis;
+//     $redis->connect('127.0.0.1');
+//     return $redis;
+// });
